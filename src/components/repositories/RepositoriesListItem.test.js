@@ -1,4 +1,4 @@
-import { screen, render } from "@testing-library/react";
+import { screen, render, findByRole } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 import RepositoriesListItem from "./RepositoriesListItem";
@@ -8,7 +8,9 @@ const renderComponent = () => {
     full_name: "facebook/react",
     language: "Javascript",
     description: "A js library",
-    owner: "facebook",
+    owner: {
+      login: "facebook",
+    },
     name: "react",
     html_url: "http://github.com/facebook/react",
   };
@@ -29,5 +31,19 @@ test("show a link to the github home page for this repo", async () => {
     name: /gitub repository/i,
   });
 
-  expect(link).toHaveAttribute('href', repo.html_url);
+  expect(link).toHaveAttribute("href", repo.html_url);
+});
+
+test("show a fileicon with the appropriate icon", async () => {
+  const { repo } = renderComponent();
+  const icon = await screen.findByRole("img", { name: repo.language });
+  expect(icon).toHaveClass("js-icon");
+});
+
+test("show a link to code editor page", async () => {
+  const { repo } = renderComponent();
+  await screen.findByRole("img", { name: repo.language });
+  const link = screen.getByRole("link", { name: new RegExp(repo.owner.login)});
+
+  expect(link).toHaveAttribute('href', `/repositories/${repo.full_name}`)
 });
